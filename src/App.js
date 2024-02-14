@@ -1,6 +1,6 @@
 import { Children, useState } from "react";
 import { mockComponent } from "react-dom/test-utils";
-
+import TextExpander from "./TextExpander";
 const tempMovieData = [
   {
     imdbID: "tt1375666",
@@ -52,25 +52,76 @@ const average = (arr) =>
   arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0);
 export default function App() {
   const [movies, setMovies] = useState(tempMovieData);
+  const [watched, setWatched] = useState(tempWatchedData);
   return (
-    <>
-      <NavBar movies={movies} />
-      <Main movies={movies}/>
-    </>
+    <div>
+      <TextExpander>
+        Space travel is the ultimate adventure! Imagine soaring past the stars
+        and exploring new worlds. It's the stuff of dreams and science fiction,
+        but believe it or not, space travel is a real thing. Humans and robots
+        are constantly venturing out into the cosmos to uncover its secrets and
+        push the boundaries of what's possible.
+      </TextExpander>
+
+      <TextExpander
+        collapsedNumWords={20}
+        expandButtonText="Show text"
+        collapseButtonText="Collapse text"
+        buttonColor="#ff6622"
+      >
+        Space travel requires some seriously amazing technology and
+        collaboration between countries, private companies, and international
+        space organizations. And while it's not always easy (or cheap), the
+        results are out of this world. Think about the first time humans stepped
+        foot on the moon or when rovers were sent to roam around on Mars.
+      </TextExpander>
+
+      <TextExpander
+        expand={true}
+        className="box"
+        collapsedNumWords={20}
+        expandButtonText="Show text"
+        collapseButtonText="Collapse text"
+        buttonColor="#000"
+      >
+        Space missions have given us incredible insights into our universe and
+        have inspired future generations to keep reaching for the stars. Space
+        travel is a pretty cool thing to think about. Who knows what we'll
+        discover next!
+      </TextExpander>
+    </div>
+    // <>
+    //   <NavBar>
+    //     <Search />
+    //     <NumResults movies={movies} />
+    //   </NavBar>
+    //   <Main>\
+    //     {/* <Box element={element} /> */}
+    //     <Box>
+    //       <List movies={movies} />
+    //     </Box>
+    //     <Box>
+    //     <>
+    //       <WatchedSummary watched={watched} />
+    //       <WatchedList watched={watched} />
+    //     </>
+    //     </Box>
+       
+    //   </Main>
+    // </>
   );
 }
 
-function NavBar({movies}) {
+function NavBar({ children }) {
   return (
     <nav className="nav-bar">
       <Logo />
-      <Search />
-      <NumResults movies={movies} />
+      {children}
     </nav>
   );
 }
 
-function NumResults({movies}) {
+function NumResults({ movies }) {
   return (
     <p className="num-results">
       Found <strong>{movies.length}</strong> results
@@ -106,99 +157,100 @@ function Button({ isOpen, setIsOpen, children }) {
   );
 }
 
-function Main({movies}) {
+function Main({ children }) {
+  
+  return <main className="main">{children}</main>;
+}
+
+function Movie({ movie }) {
   return (
-    <main className="main">
-      <ListBox movies={movies} />
-      <WatchedBox />
-    </main>
+    <li key={movie.imdbID}>
+      <img src={movie.Poster} alt={`${movie.Title} poster`} />
+      <h3>{movie.Title}</h3>
+      <div>
+        <p>
+          <span>🗓</span>
+          <span>{movie.Year}</span>
+        </p>
+      </div>
+    </li>
   );
 }
 
-function Movie({movie}){
-  return(
-<li key={movie.imdbID}>
-          <img src={movie.Poster} alt={`${movie.Title} poster`} />
-          <h3>{movie.Title}</h3>
-          <div>
-            <p>
-              <span>🗓</span>
-              <span>{movie.Year}</span>
-            </p>
-          </div>
-        </li>
-  )
-}
-
-function ListBox({movies}) {
-
-  const [isOpen1, setIsOpen1] = useState(true);
+function Box({ children }) {
+  const [isOpen, setIsOpen] = useState(true);
   return (
     <div className="box">
-      <Button isOpen={isOpen1} setIsOpen={setIsOpen1}>
-        {isOpen1 ? "–" : "+"}
+      <Button isOpen={isOpen} setIsOpen={setIsOpen}>
+        {isOpen ? "–" : "+"}
       </Button>
-      {isOpen1 && <List movies={movies} />}
+      {isOpen && children}
     </div>
   );
 }
 
+// function WatchedBox() {
+//   const [watched, setWatched] = useState(tempWatchedData);
+//   const [isOpen2, setIsOpen2] = useState(true);
+
+//   return (
+//     <div className="box">
+//       <Button isOpen={isOpen2} setIsOpen={setIsOpen2}>
+//         {isOpen2 ? "–" : "+"}
+//       </Button>
+
+//       {isOpen2 && (
+//         <>
+//           <WatchedSummary watched={watched} />
+//           <WatchedList watched={watched} />
+//         </>
+//       )}
+//     </div>
+//   );
+// }
+
 function List({ movies }) {
+  console.log(movies)
   return (
     <ul className="list">
-      {movies?.map((movie) => (<Movie movie={movie} key={movie.imdbID}/> ))}
+      {movies?.map((movie) => (
+        <Movie movie={movie} key={movie.imdbID} />
+      ))}
     </ul>
   );
 }
 
-function WatchedBox() {
-  const [watched, setWatched] = useState(tempWatchedData);
-  const [isOpen2, setIsOpen2] = useState(true);
-
-  return (
-    <div className="box">
-      <Button isOpen={isOpen2} setIsOpen={setIsOpen2}>
-        {isOpen2 ? "–" : "+"}
-      </Button>
-
-      {isOpen2 && (
-        <>
-          <WatchedSummary watched={watched} />
-          <WatchedList watched={watched} />
-        </>
-      )}
-    </div>
-  );
-}
 
 function WatchedList({ watched }) {
   return (
     <ul className="list">
-      {watched.map((movie) => ( <WatchedMovie movie={movie} /> ))}
+      {watched.map((movie) => (
+        <WatchedMovie movie={movie} key={movie} />
+      ))}
     </ul>
   );
 }
-function WatchedMovie({movie}){
-  return(
+function WatchedMovie({ movie }) {
+  return (
     <li key={movie.imdbID}>
-    <img src={movie.Poster} alt={`${movie.Title} poster`} />
-    <h3>{movie.Title}</h3>
-    <div>
-      <p>
-        <span>⭐️</span>
-        <span>{movie.imdbRating}</span>
-      </p>
-      <p>
-        <span>🌟</span>
-        <span>{movie.userRating}</span>
-      </p>
-      <p>
-        <span>⏳</span>
-        <span>{movie.runtime} min</span>
-      </p>
-    </div>
-  </li>
-  )
+      <img src={movie.Poster} alt={`${movie.Title} poster`} />
+      <h3>{movie.Title}</h3>
+      <div>
+        <p>
+          <span>⭐️</span>
+          <span>{movie.imdbRating}</span>
+        </p>
+        <p>
+          <span>🌟</span>
+          <span>{movie.userRating}</span>
+        </p>
+        <p>
+          <span>⏳</span>
+          <span>{movie.runtime} min</span>
+        </p>
+      </div>
+    </li>
+  );
 }
 
 function WatchedSummary({ watched }) {
