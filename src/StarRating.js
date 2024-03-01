@@ -1,13 +1,18 @@
 import { useState } from "react";
 import { PropTypes } from "prop-types";
+
+//Style object for using in container.
 const containerStyle = {
   display: "flex",
   alignItems: "center",
   gap: "16px",
 };
+//Style object for using in star container.
 const starContainerStyle = {
   display: "flex",
 };
+
+//Type checking the props
 StarRating.propTypes = {
   maxRating: PropTypes.number,
   defaultRating: PropTypes.number,
@@ -15,20 +20,23 @@ StarRating.propTypes = {
   size: PropTypes.number,
   messages: PropTypes.array,
   className: PropTypes.string,
-  // onSetRating: PropTypes.func,
+  onSetRating: PropTypes.func,
 };
 
 function StarRating({
+  //Initial props to be passed in the component with their default values.
   maxRating = 5,
   color = "#fcc419",
   size = 48,
   className,
   messages = [],
   defaultRating = 0,
-  // onSetRating,
+  onSetRating,
 }) {
-  const [rating, setRating] = useState(defaultRating);
-  const [hoverRating, setHoverRating] = useState(0);
+
+  const [rating, setRating] = useState(defaultRating); //State to set the rating 
+  const [hoverRating, setHoverRating] = useState(0); //State to set the raing on hovering.
+  // Style object for styling the text.
   const textStyle = {
     lineHeight: "0",
     margin: "0",
@@ -37,11 +45,12 @@ function StarRating({
   };
   function handleRating(rating) {
     setRating(rating);
-    // onSetRating(rating);
+    onSetRating(rating);
   }
   return (
     <div style={containerStyle} className={className}>
       <div style={starContainerStyle}>
+        {/* Printing the star with the length provided in props */}
         {Array.from({ length: maxRating }, (_, i) => (
           <Star
             key={i}
@@ -62,7 +71,7 @@ function StarRating({
     </div>
   );
 }
-
+//component to display the star.
 function Star({ full, updateRating, onHoverIn, onHoverOut, color, size }) {
   const starStyle = {
     width: `${size}px`,
