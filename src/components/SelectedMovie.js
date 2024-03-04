@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import StarRating from "../StarRating";
 import Loader from "./Loader";
 import ErrorMessage from "./ErrorMessage";
-import * as constants from "./Constants"
+import * as constants from "./Constants";
 //Component for showing the currently selected movie detail
 export default function SelectedMovie({
   selectedId,
@@ -20,6 +20,7 @@ export default function SelectedMovie({
     (movie) => movie.imdbID === selectedId
   )?.userRating; //Getting the userrating of the slected movie if it exists in the watched list
   // const checkWatched = watched.filter((item) => item.imdbID === selectedId );
+
   const {
     Title: title,
     Year: year,
@@ -32,7 +33,6 @@ export default function SelectedMovie({
     Genre: genre,
     Poster: poster,
   } = movie;
-
   function handleAdd() {
     const newWatchedMovie = {
       imdbID: selectedId,
@@ -46,6 +46,22 @@ export default function SelectedMovie({
     onAddWatched(newWatchedMovie);
     onCloseMovie();
   }
+
+  //This useeffect will run whenever user type something in search box.
+  useEffect(
+    function () {
+      function callback (e) {
+        if (e.code === "Escape") {
+          onCloseMovie();
+        }
+      }
+      document.addEventListener("keydown", callback);
+      return function(){
+        document.removeEventListener('keydown',callback);
+      }
+    },
+    [onCloseMovie]
+  );
   useEffect(
     function () {
       setIsLoading(true); // Making the loading state true before fetching movie data
@@ -72,6 +88,19 @@ export default function SelectedMovie({
       getMovieDetail();
     },
     [selectedId]
+  );
+
+  //Change the document title with the selected movie title.
+  useEffect(
+    function () {
+      if (!title) return;
+      document.title = `Movie | ${title}`;
+      // Cleanup function to reset the title whenever the movie is deselected.
+      return function () {
+        document.title = "UsePopcorn";
+      };
+    },
+    [title]
   );
 
   //Render the movie detail only if loading is false and there is no error.

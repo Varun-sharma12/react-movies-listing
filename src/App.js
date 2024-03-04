@@ -1,11 +1,11 @@
-import {useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 // import TextExpander from "./TextExpander";
 import WatchedList from "./components/WatchedList";
 import WatchedSummary from "./components/WatchedSummary";
 import Loader from "./components/Loader";
 import ErrorMessage from "./components/ErrorMessage";
 import SelectedMovie from "./components/SelectedMovie";
-import * as constants from "./components/Constants"
+import * as constants from "./components/Constants";
 import List from "./components/List";
 import Box from "./components/Box";
 import NavBar from "./components/NavBar";
@@ -73,7 +73,7 @@ export default function App() {
 
   //Function passes the id of the selected movie .
   function selectMovie(id) {
-    setSelectedId((selectedId) => (id === selectedId ? null : id));
+    setSelectedId((selected) => (id === selected ? null : id));
   }
 
   //Close a particular selected movie by clickin on it again or by back button.
@@ -92,24 +92,28 @@ export default function App() {
     setWatched(leftMovies); // Setting the state of watched movies with the left movies.
   }
 
-  //This useeffect will run whenever user type something in search box.
   useEffect(
     function () {
+      const controller = new AbortController();
       async function fetchMovies() {
         //Exception handeling for fetching the data through  the api.
         try {
           setIsLoading(true);
           setError("");
           const res = await fetch(
-            `http://www.omdbapi.com/?apikey=${constants.key}&s=${query}`
+            `http://www.omdbapi.com/?apikey=${constants.key}&s=${query}`,{signal: controller.signal}
           );
           if (!res.ok)
             throw new Error("something went wrong with fetching movies");
           const data = await res.json();
           if (data.Response === "False") throw new Error("Movie Not Found");
           setMovies(data.Search);
+          setError("");
         } catch (err) {
-          setError(err.message);
+          if(err.name !== "AbortError"){
+            setError(err.message);
+          }
+          // setError(err.message);
         } finally {
           setIsLoading(false); //Finally set the loading false.
         }
@@ -119,14 +123,19 @@ export default function App() {
         setError("");
         return;
       }
+      closeMovie();
       fetchMovies();
+      //Clean up function to abort the fetch request between the re-renders
+      return function(){
+        controller.abort();
+      }
     },
     [query]
   );
   return (
     <>
       <NavBar>
-        <Search query={query} setQuery={setQuery} /> 
+        <Search query={query} setQuery={setQuery} />
         <NumResults movies={movies} />
       </NavBar>
       <Main>
