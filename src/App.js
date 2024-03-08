@@ -12,6 +12,7 @@ import NumResults from "./components/NumResults";
 import Main from "./components/Main";
 import Search from "./components/Search";
 import { useMovies } from "./components/useMovies";
+import { useLocalStorageState } from "./components/useLocalStorageState";
 //Static demo data for the initial stage of the app
 const tempMovieData = [
   {
@@ -65,13 +66,9 @@ const tempWatchedData = [
 export default function App() {
   //Initial states required in the app
   const [query, setQuery] = useState(""); // State for storing the query string typed in search box.
-  const [watched, setWatched] = useState(function(){
-    const storedValue = localStorage.getItem('watched');
-    return JSON.parse(storedValue);
-  });
+  const [watched, setWatched] = useLocalStorageState([], 'watched');
   const {movies, isLoading, error} = useMovies(query);
   // const [watched, setWatched] = useState([]); // State for holding the data of watched movies.
-
   const [selectedId, setSelectedId] = useState(null); // State for holding the id of the selected movie to display its information.
 
   //Function passes the id of the selected movie .
@@ -96,10 +93,6 @@ export default function App() {
     const leftMovies = watched.filter((item) => id !== item.imdbID); //Movies left after removint the current movie from watched list
     setWatched(leftMovies); // Setting the state of watched movies with the left movies.
   }
-  useEffect(function(){
-    localStorage.setItem('watched', JSON.stringify(watched))
-  },[watched]);
-
  
   return (
     <>

@@ -3,6 +3,7 @@ import StarRating from "../StarRating";
 import Loader from "./Loader";
 import ErrorMessage from "./ErrorMessage";
 import * as constants from "./Constants";
+import { useKey } from "./useKey";
 //Component for showing the currently selected movie detail
 export default function SelectedMovie({
   selectedId,
@@ -16,6 +17,7 @@ export default function SelectedMovie({
   const [error, setError] = useState(""); //Showing error due to api fetch.
   const [userRating, setUserRating] = useState(""); // stores the rating provided by a user to a movie.
   const isWatched = watched.map((movie) => movie.imdbID).includes(selectedId); //Check whether the watched list contains the selected movie
+ 
   const watchedUserRating = watched.find(
     (movie) => movie.imdbID === selectedId
   )?.userRating; //Getting the userrating of the slected movie if it exists in the watched list
@@ -57,21 +59,7 @@ export default function SelectedMovie({
   }
 
   //This useeffect will run whenever user type something in search box.
-  useEffect(
-    function () {
-      //Close the selected movie on pressing the Escape key
-      function callback(e) {
-        if (e.code === "Escape") {
-          onCloseMovie();
-        }
-      }
-      document.addEventListener("keydown", callback);
-      return function () {
-        document.removeEventListener("keydown", callback);
-      };
-    },
-    [onCloseMovie]
-  );
+  useKey('Escape', onCloseMovie);
   useEffect(
     function () {
       setIsLoading(true); // Making the loading state true before fetching movie data
