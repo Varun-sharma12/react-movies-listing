@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import StarRating from "../StarRating";
 import Loader from "./Loader";
 import ErrorMessage from "./ErrorMessage";
@@ -20,7 +20,14 @@ export default function SelectedMovie({
     (movie) => movie.imdbID === selectedId
   )?.userRating; //Getting the userrating of the slected movie if it exists in the watched list
   // const checkWatched = watched.filter((item) => item.imdbID === selectedId );
+  const countRef = useRef(0);
+    useEffect(
+    function () {
+      if (userRating) countRef.current++;
 
+    },
+    [userRating]
+  );
   const {
     Title: title,
     Year: year,
@@ -42,6 +49,8 @@ export default function SelectedMovie({
       imdbRating: Number(imdbRating),
       runtime: Number(runtime.split(" ").at(0)),
       userRating,
+      countRatingDecisions: countRef.current,
+
     };
     onAddWatched(newWatchedMovie);
     onCloseMovie();
@@ -50,15 +59,16 @@ export default function SelectedMovie({
   //This useeffect will run whenever user type something in search box.
   useEffect(
     function () {
-      function callback (e) {
+      //Close the selected movie on pressing the Escape key
+      function callback(e) {
         if (e.code === "Escape") {
           onCloseMovie();
         }
       }
       document.addEventListener("keydown", callback);
-      return function(){
-        document.removeEventListener('keydown',callback);
-      }
+      return function () {
+        document.removeEventListener("keydown", callback);
+      };
     },
     [onCloseMovie]
   );

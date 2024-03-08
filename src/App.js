@@ -5,13 +5,13 @@ import WatchedSummary from "./components/WatchedSummary";
 import Loader from "./components/Loader";
 import ErrorMessage from "./components/ErrorMessage";
 import SelectedMovie from "./components/SelectedMovie";
-import * as constants from "./components/Constants";
 import List from "./components/List";
 import Box from "./components/Box";
 import NavBar from "./components/NavBar";
 import NumResults from "./components/NumResults";
 import Main from "./components/Main";
 import Search from "./components/Search";
+import { useMovies } from "./components/useMovies";
 //Static demo data for the initial stage of the app
 const tempMovieData = [
   {
@@ -65,10 +65,13 @@ const tempWatchedData = [
 export default function App() {
   //Initial states required in the app
   const [query, setQuery] = useState(""); // State for storing the query string typed in search box.
-  const [movies, setMovies] = useState([]); // State for holding the data of movies list.
-  const [watched, setWatched] = useState([]); // State for holding the data of watched movies.
-  const [error, setError] = useState(""); // State for holding the error messages.
-  const [isLoading, setIsLoading] = useState(false); // State for holding the loading stated.
+  const [watched, setWatched] = useState(function(){
+    const storedValue = localStorage.getItem('watched');
+    return JSON.parse(storedValue);
+  });
+  const {movies, isLoading, error} = useMovies(query);
+  // const [watched, setWatched] = useState([]); // State for holding the data of watched movies.
+
   const [selectedId, setSelectedId] = useState(null); // State for holding the id of the selected movie to display its information.
 
   //Function passes the id of the selected movie .
@@ -84,6 +87,8 @@ export default function App() {
   //function to add a movie to watch list
   function handleAddWatched(movie) {
     setWatched((watched) => [...watched, movie]); // Adding the new movie in the watched state
+
+    // localStorage.setItem('watched', JSON.stringify([...watched,movie]))
   }
 
   //Function to remove a movie from the watched list
@@ -91,47 +96,11 @@ export default function App() {
     const leftMovies = watched.filter((item) => id !== item.imdbID); //Movies left after removint the current movie from watched list
     setWatched(leftMovies); // Setting the state of watched movies with the left movies.
   }
+  useEffect(function(){
+    localStorage.setItem('watched', JSON.stringify(watched))
+  },[watched]);
 
-  useEffect(
-    function () {
-      const controller = new AbortController();
-      async function fetchMovies() {
-        //Exception handeling for fetching the data through  the api.
-        try {
-          setIsLoading(true);
-          setError("");
-          const res = await fetch(
-            `http://www.omdbapi.com/?apikey=${constants.key}&s=${query}`,{signal: controller.signal}
-          );
-          if (!res.ok)
-            throw new Error("something went wrong with fetching movies");
-          const data = await res.json();
-          if (data.Response === "False") throw new Error("Movie Not Found");
-          setMovies(data.Search);
-          setError("");
-        } catch (err) {
-          if(err.name !== "AbortError"){
-            setError(err.message);
-          }
-          // setError(err.message);
-        } finally {
-          setIsLoading(false); //Finally set the loading false.
-        }
-      }
-      if (query.length < 3) {
-        setMovies([]);
-        setError("");
-        return;
-      }
-      closeMovie();
-      fetchMovies();
-      //Clean up function to abort the fetch request between the re-renders
-      return function(){
-        controller.abort();
-      }
-    },
-    [query]
-  );
+ 
   return (
     <>
       <NavBar>
